@@ -1,6 +1,7 @@
 This is a basic Android native example written completely in Odin. It adapts and rewrites mmozeiko's [C example](https://github.com/mmozeiko/android-native-example) to work with Odin.
 
 This requires that you write some basic bindings to the Android NDK in order to compile and run.
+And also a few extra EGL constants and procs.
 
 # Building
 
