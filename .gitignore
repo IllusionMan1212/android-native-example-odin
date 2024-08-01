@@ -1,0 +1,5 @@
+bin
+lib
+obj
+libmain.so
+.keystore
