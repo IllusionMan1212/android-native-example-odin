@@ -8,3 +8,6 @@ First you must adjust `build.sh` and `launch.sh` to have correct paths to Androi
 Then set `APK` variable to the desired apk package name. Use Android SDK to install build-tools and platform SDK. 
 
 Now you can use `build.sh` to build and install the app, and `launch.sh` to run the application:
+
+# License
+The code is licensed under the Unlicense license. I do not own the app icon (Odin logo). All copyright is owned by [GingerBill](https://github.com/gingerbill)
