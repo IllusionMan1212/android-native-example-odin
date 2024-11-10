@@ -10,4 +10,4 @@ Then set `APK` variable to the desired apk package name. Use Android SDK to inst
 Now you can use `build.sh` to build and install the app, and `launch.sh` to run the application:
 
 # License
-The code is licensed under the Unlicense license. I do not own the app icon (Odin logo). All copyright is owned by [GingerBill](https://github.com/gingerbill)
+The code is licensed under the Unlicense license. I do not own the app icon (Odin logo). The logo copyright is owned by [GingerBill](https://github.com/gingerbill)
