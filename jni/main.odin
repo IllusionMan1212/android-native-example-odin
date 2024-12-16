@@ -23,7 +23,8 @@ engine :: struct {
     shader: u32,
 }
 
-engine_init_display :: proc(engine: ^engine) {
+engine_init_display :: proc "contextless" (engine: ^engine) {
+    context = runtime.default_context()
     attribs := []i32{
         egl.SURFACE_TYPE, egl.WINDOW_BIT,
         egl.RENDERABLE_TYPE, egl.OPENGL_ES3_BIT,
@@ -161,7 +162,7 @@ engine_init_display :: proc(engine: ^engine) {
     return
 }
 
-engine_draw_frame :: proc(engine: ^engine) {
+engine_draw_frame :: proc "contextless" (engine: ^engine) {
     if engine.display == nil {
         return
     }
@@ -182,7 +183,7 @@ engine_draw_frame :: proc(engine: ^engine) {
     egl.SwapBuffers(engine.display, engine.surface)
 }
 
-engine_term_display :: proc(engine: ^engine) {
+engine_term_display :: proc "contextless" (engine: ^engine) {
     if engine.display != egl.NO_DISPLAY {
         gl.DeleteProgram(engine.shader)
         gl.DeleteBuffers(1, &engine.buffer)
@@ -202,11 +203,11 @@ engine_term_display :: proc(engine: ^engine) {
     engine.surface = egl.NO_SURFACE
 }
 
-engine_handle_input :: proc(app: ^android.android_app, event: ^android.AInputEvent) -> i32 {
+engine_handle_input :: proc "c" (app: ^android.android_app, event: ^android.AInputEvent) -> i32 {
     return 0
 }
 
-engine_handle_cmd :: proc(app: ^android.android_app, cmd: android.AppCmd) {
+engine_handle_cmd :: proc "c" (app: ^android.android_app, cmd: android.AppCmd) {
     engine := cast(^engine)app.userData
 
     #partial switch (cmd) {
