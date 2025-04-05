@@ -107,11 +107,11 @@ engine_init_display :: proc "contextless" (engine: ^engine) {
     engine.height = h
 
     vasset := android.AAssetManager_open(engine.app.activity.assetManager, "vertex.glsl", .BUFFER)
-    defer android.AAsset_close(vasset)
     if vasset == nil {
         LOG(.INFO, "NativeExampleOdin", "error opening vertex.glsl")
         return
     }
+    defer android.AAsset_close(vasset)
     vsrc := cstring(android.AAsset_getBuffer(vasset))
     vlen := i32(android.AAsset_getLength(vasset))
 
@@ -120,11 +120,11 @@ engine_init_display :: proc "contextless" (engine: ^engine) {
     gl.CompileShader(v)
 
     fasset := android.AAssetManager_open(engine.app.activity.assetManager, "fragment.glsl", .BUFFER)
-    defer android.AAsset_close(fasset)
     if fasset == nil {
         LOG(.INFO, "NativeExampleOdin", "error opening fragment.glsl")
         return
     }
+    defer android.AAsset_close(fasset)
     fsrc := cstring(android.AAsset_getBuffer(fasset))
     flen := i32(android.AAsset_getLength(fasset))
 
@@ -158,8 +158,6 @@ engine_init_display :: proc "contextless" (engine: ^engine) {
 
     engine.buffer = b
     engine.shader = p
-
-    return
 }
 
 engine_draw_frame :: proc "contextless" (engine: ^engine) {
