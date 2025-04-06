@@ -36,7 +36,7 @@ engine_init_display :: proc "contextless" (engine: ^engine) {
 
     display := egl.GetDisplay(egl.DEFAULT_DISPLAY)
     if display == egl.NO_DISPLAY {
-        LOG(.INFO, "NativeExampleOdin", "Naterror with eglGetDisplay")
+        LOG(.INFO, "NativeExampleOdin", "error with eglGetDisplay")
         return
     }
 
