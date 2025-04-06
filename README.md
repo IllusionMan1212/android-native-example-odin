@@ -4,10 +4,12 @@ This requires that you write some basic bindings to the Android NDK (or use mine
 
 # Building
 
-First you must adjust `build.sh` and `launch.sh` to have correct paths to Android SDK, Android NDK and the Jetbrains RT.
-Then set `APK` variable to the desired apk package name. Use Android SDK to install build-tools and platform SDK. 
+### Prerequisites
+- The Android SDK must be installed and the appropriate Odin environment variables must be set.
+- The `keytool` binary must be in your PATH
 
-Now you can use `build.sh` to build and install the app, and `launch.sh` to run the application:
+### Steps
+Run `build.sh` to build and install the app, and `launch.sh` to run the application:
 
 # License
 The code is licensed under the Unlicense license. I do not own the app icon (Odin logo). The logo copyright is owned by [GingerBill](https://github.com/gingerbill)
