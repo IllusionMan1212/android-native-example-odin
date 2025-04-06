@@ -2,8 +2,6 @@
 
 ## TODO: handle different ABIs, currently only builds for arm64
 
-#ANDROID_JBR=/home/illusion/android-studio/jbr
-
 # Create a debug signing key to sign our application.
 if [ ! -f .keystore ]; then
 	keytool -genkey -dname "CN=Android Debug, O=Android, C=US" -keystore .keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -validity 30000
