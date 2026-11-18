@@ -8,21 +8,15 @@ fi
 
 # Build the shared lib
 if [[ $1 == "release" ]]; then
-	odin build . -target:linux_arm64 -subtarget:android -build-mode:shared -o:speed -define:RELEASE_BUILD=true
+	odin build . -target:linux_arm64 -subtarget:android -build-mode:shared -o:speed -define:RELEASE_BUILD=true -out:lib/arm64-v8a/libmain.so
 else
-	odin build . -target:linux_arm64 -subtarget:android -build-mode:shared -debug -show-system-calls
+	odin build . -target:linux_arm64 -subtarget:android -build-mode:shared -debug -show-system-calls -out:lib/arm64-v8a/libmain.so
 fi
 
 name=$(basename "$PWD")
 
-# Create the proper lib directories and move the shared lib to them
-# Rename the shared lib to match what we specified in the AndroidManifest.xml file
-# for the android.app.lib_name metadata value
-mkdir -p android/lib/lib/arm64-v8a
-mv $name.so android/lib/lib/arm64-v8a/libmain.so || exit 1
-
 # Bundle the directory into an apk
-odin bundle android android -android-keystore:.keystore -android-keystore-password:"android"
+odin bundle android . -android-keystore:.keystore -android-keystore-password:"android"
 
 cleanup() {
 	rm test.apk-build

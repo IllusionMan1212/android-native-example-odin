@@ -2,15 +2,15 @@ package android_native_example
 
 import "base:runtime"
 
-import "shared:android"
+import "core:log"
+import glue "core:sys/android/native_app_glue"
+import "core:sys/android"
 
 import "vendor:egl"
 import gl "vendor:OpenGL"
 
-LOG :: android.__android_log_print
-
 engine :: struct {
-    app: ^android.android_app,
+    app: ^glue.android_app,
 
     active: bool,
     display: egl.Display,
@@ -36,12 +36,12 @@ engine_init_display :: proc "contextless" (engine: ^engine) {
 
     display := egl.GetDisplay(egl.DEFAULT_DISPLAY)
     if display == egl.NO_DISPLAY {
-        LOG(.INFO, "NativeExampleOdin", "error with eglGetDisplay")
+        log.info("error with eglGetDisplay")
         return
     }
 
     if !egl.Initialize(display, nil, nil) {
-        LOG(.INFO, "NativeExampleOdin", "error with eglInitialize")
+        log.info("error with eglInitialize")
         return
     }
 
@@ -56,47 +56,47 @@ engine_init_display :: proc "contextless" (engine: ^engine) {
     config: egl.Config
     numConfigs: i32
     if !egl.ChooseConfig(display, raw_data(attribs), &config, 1, &numConfigs) {
-        LOG(.INFO, "NativeExampleOdin", "error with eglChooseConfig")
+        log.info("error with eglChooseConfig")
         return
     }
 
     format: i32
     if !egl.GetConfigAttrib(display, config, egl.NATIVE_VISUAL_ID, &format) {
-        LOG(.INFO, "NativeExampleOdin", "error with eglGetConfigAttrib")
+        log.info("error with eglGetConfigAttrib")
         return
     }
 
-    android.ANativeWindow_setBuffersGeometry(engine.app.window, 0, 0, format)
+    android.ANativeWindow_setBuffersGeometry(engine.app.window, 0, 0, cast(android.AHardwareBuffer_Format)format)
 
     surface := egl.CreateWindowSurface(display, config, cast(egl.NativeWindowType)engine.app.window, nil)
     if surface == nil {
-        LOG(.INFO, "NativeExampleOdin", "error with eglCreateWindowSurface")
+        log.info("error with eglCreateWindowSurface")
         return
     }
 
     ctx_attrib := []i32{ egl.CONTEXT_CLIENT_VERSION, 2, egl.NONE }
     ctx := egl.CreateContext(display, config, nil, raw_data(ctx_attrib))
     if ctx == nil {
-        LOG(.INFO, "NativeExampleOdin", "error with eglCreateContext")
+        log.info("error with eglCreateContext")
         return
     }
 
     if !egl.MakeCurrent(display, surface, surface, ctx) {
-        LOG(.INFO, "NativeExampleOdin", "error with eglMakeCurrent")
+        log.info("error with eglMakeCurrent")
         return
     }
 
-    LOG(.INFO, "NativeExampleOdin", "GL_VENDOR = %s", gl.GetString(gl.VENDOR))
-    LOG(.INFO, "NativeExampleOdin", "GL_RENDERER = %s", gl.GetString(gl.RENDERER))
-    LOG(.INFO, "NativeExampleOdin", "GL_VERSION = %s", gl.GetString(gl.VERSION))
+    log.infof("GL_VENDOR = %s", gl.GetString(gl.VENDOR))
+    log.infof("GL_RENDERER = %s", gl.GetString(gl.RENDERER))
+    log.infof("GL_VERSION = %s", gl.GetString(gl.VERSION))
 
     w: i32
     h: i32
     egl.QuerySurface(display, surface, egl.WIDTH, &w)
     egl.QuerySurface(display, surface, egl.HEIGHT, &h)
 
-    LOG(.INFO, "NativeExampleOdin", "initial width: %d", w)
-    LOG(.INFO, "NativeExampleOdin", "initial height: %d", h)
+    log.infof("initial width: %d", w)
+    log.infof("initial height: %d", h)
 
     gl.Viewport(0, 0, w, h)
 
@@ -108,7 +108,7 @@ engine_init_display :: proc "contextless" (engine: ^engine) {
 
     vasset := android.AAssetManager_open(engine.app.activity.assetManager, "vertex.glsl", .BUFFER)
     if vasset == nil {
-        LOG(.INFO, "NativeExampleOdin", "error opening vertex.glsl")
+        log.info("error opening vertex.glsl")
         return
     }
     defer android.AAsset_close(vasset)
@@ -121,7 +121,7 @@ engine_init_display :: proc "contextless" (engine: ^engine) {
 
     fasset := android.AAssetManager_open(engine.app.activity.assetManager, "fragment.glsl", .BUFFER)
     if fasset == nil {
-        LOG(.INFO, "NativeExampleOdin", "error opening fragment.glsl")
+        log.info("error opening fragment.glsl")
         return
     }
     defer android.AAsset_close(fasset)
@@ -201,74 +201,64 @@ engine_term_display :: proc "contextless" (engine: ^engine) {
     engine.surface = egl.NO_SURFACE
 }
 
-engine_handle_input :: proc "c" (app: ^android.android_app, event: ^android.AInputEvent) -> i32 {
+engine_handle_input :: proc(app: ^glue.android_app, event: ^android.AInputEvent) -> i32 {
     return 0
 }
 
-engine_handle_cmd :: proc "c" (app: ^android.android_app, cmd: android.AppCmd) {
+engine_handle_cmd :: proc (app: ^glue.android_app, cmd: i32) {
     engine := cast(^engine)app.userData
 
-    #partial switch (cmd) {
-        case .INIT_WINDOW:
+    switch cmd {
+        case glue.APP_CMD_INIT_WINDOW:
             if engine.app.window != nil {
-                LOG(.INFO, "NativeExampleOdin", "init window event")
+                log.info("init window event")
                 engine_init_display(engine)
                 engine_draw_frame(engine)
             }
 
-        case .TERM_WINDOW:
-            LOG(.INFO, "NativeExampleOdin", "term window event")
+        case glue.APP_CMD_TERM_WINDOW:
+            log.info("term window event")
             engine_term_display(engine)
-        case .WINDOW_RESIZED:
-            LOG(.INFO, "NativeExampleOdin", "window resized")
+        case glue.APP_CMD_WINDOW_RESIZED:
+            log.info("window resized")
             h := android.ANativeWindow_getHeight(app.window)
             w := android.ANativeWindow_getWidth(app.window)
-            LOG(.INFO, "NativeExampleOdin", "w: %d", w)
-            LOG(.INFO, "NativeExampleOdin", "h: %d", h)
+            log.infof("w: %d", w)
+            log.infof("h: %d", h)
             gl.Viewport(0, 0, w, h)
         
-        case .GAINED_FOCUS:
-            LOG(.INFO, "NativeExampleOdin", "gained focus event")
+        case glue.APP_CMD_GAINED_FOCUS:
+            log.info("gained focus event")
             engine.active = true
 
-        case .LOST_FOCUS:
-            LOG(.INFO, "NativeExampleOdin", "lost focus event")
+        case glue.APP_CMD_LOST_FOCUS:
+            log.info("lost focus event")
             engine.active = false
             engine_draw_frame(engine)
     }
 }
 
-@export
-android_main :: proc "contextless" (state: ^android.android_app) {
-    context = runtime.default_context()
-
+main :: proc() {
+    context.logger = log.create_console_logger(ident="NativeExampleOdin")
     engine: engine
 
-    state.userData = &engine
-    state.onAppCmd = engine_handle_cmd
-    state.onInputEvent = engine_handle_input
-    engine.app = state
+    app := glue.app()
+    app.userData = &engine
+    app.onAppCmd = engine_handle_cmd
+    app.onInputEvent = engine_handle_input
+    engine.app = app
 
-    for {
-        events: i32
-        source: ^android.android_poll_source
+    for app.destroyRequested == 0 {
+        source: ^glue.android_poll_source
 
-        ident := android.ALooper_pollAll(engine.active ? 0 : -1, nil, &events, cast(^rawptr)&source)
-        for ident >= 0 {
-            if source != nil {
-                source.process(state, source)
-            }
-
-            if state.destroyRequested != 0 {
-                engine_term_display(&engine)
-                return
-            }
-
-            ident = android.ALooper_pollAll(engine.active ? 0 : -1, nil, &events, cast(^rawptr)&source)
+        if android.ALooper_pollOnce(engine.active ? 0 : -1, nil, nil, cast(^rawptr)&source) >= 0 && source != nil {
+            source.process(app, source)
         }
 
         if (engine.active) {
             engine_draw_frame(&engine)
         }
     }
+
+    engine_term_display(&engine)
 }
